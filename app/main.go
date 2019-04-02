@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// Initialize tracer with a logger and a metrics factory
-	t, closer := newTracer("apm-go-playground", "localhost:5775")
+	t, closer := newTracer("apm-go-playground", "jaeger:5775")
 	defer closer.Close()
 	opentracing.SetGlobalTracer(t)
 
@@ -28,7 +28,7 @@ func main() {
 	g.GET("/status", status)
 
 	// Start Server
-	log.Fatalln("Start Server Error", g.Run("127.0.0.1:9000"))
+	log.Fatalln("Start Server Error", g.Run("0.0.0.0:9000"))
 }
 
 func status(c *gin.Context) {
