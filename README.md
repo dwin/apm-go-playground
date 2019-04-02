@@ -5,4 +5,4 @@ Getting started with Golang APM (Application Performance Metrics) using the [Ope
 ## Run
 
 - `docker-compose up`
-- Open [http://localhost:16686]("http://localhost:16686") in browser to view Jaeger UI
+- Open [http://localhost:16686](http://localhost:16686) in browser to view Jaeger UI
