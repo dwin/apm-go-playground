@@ -32,6 +32,19 @@ func main() {
 }
 
 func status(c *gin.Context) {
+
+	span, ctx := opentracing.StartSpanFromContext(c.Request.Context(), "Check Deps Status")
+	defer span.Finish()
+
+	span.LogEvent("Pretending to check external deps")
+
+	rSpan, _ := opentracing.StartSpanFromContext(ctx, "Check Redis Status")
+	rSpan.SetTag("redis.status", "OK")
+	time.Sleep(time.Millisecond * 10)
+	rSpan.Finish()
+
+	span.LogEvent("External deps ok")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "OK",
 	})
@@ -40,19 +53,19 @@ func status(c *gin.Context) {
 func openTracingMiddleware(t opentracing.Tracer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		//span := t.StartSpan(ctx.Request.RequestURI)
-		span, tracingCtx := opentracing.StartSpanFromContext(ctx.Request.Context(), ctx.Request.RequestURI)
+		span, tracingCtx := opentracing.StartSpanFromContext(ctx.Request.Context(), "New HTTP Request")
+		span.SetTag("http.uri", ctx.Request.RequestURI)
 		span.SetTag("http.method", ctx.Request.Method)
 		span.SetTag("http.user_agent", ctx.Request.UserAgent())
 		span.SetTag("http.client_ip", ctx.ClientIP())
 		ctx.Request = ctx.Request.WithContext(tracingCtx)
-		span.LogEvent("New Request")
 		defer span.Finish()
 
 		//ctx.Set("tracer",tracer.)
 		ctx.Next()
 
-		// span.SetTag("response-status", ctx.Request.Response.Status)
-		// span.SetTag("response-status-code", ctx.Request.Response.StatusCode)
+		span.SetTag("http.status_code", ctx.Writer.Status())
+		span.SetTag("http.response_size", ctx.Writer.Size())
 	}
 }
 
